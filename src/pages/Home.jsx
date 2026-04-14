@@ -31,20 +31,22 @@ const Home = () => {
   const handleGenerate = async () => {
     setLoading(true);
     setResult(null);
+    setIsSaved(false);
     try {
       const response = await api.post('/generate', formData);
       setResult(response.data);
+      setLoading(false); // UI becomes interactive immediately
 
-      // Auto-save to Archive for better UX
-      await api.post('/save', {
+      // Auto-save happens in the background
+      api.post('/save', {
         ...formData,
         ...response.data,
-        userId: '65a7f9b8c2d1e4a5b6c7d8e9' // Current Session ID
-      });
-      setIsSaved(true);
+        userId: '65a7f9b8c2d1e4a5b6c7d8e9' 
+      }).then(() => setIsSaved(true))
+        .catch(err => console.error('Background save failed:', err));
+
     } catch (error) {
       console.error('Generation failed:', error);
-    } finally {
       setLoading(false);
     }
   };
